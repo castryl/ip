@@ -1,0 +1,11 @@
+todo homework
+deadline essay /by sunday
+event concert /from tues 2pm /to tues 5pm
+list
+mark 2
+mark 3
+list
+unmark 2
+list
+add book
+bye
