@@ -30,104 +30,164 @@ public class Late {
         while (true) {
             String input = scanner.nextLine();
 
-            if (input.equalsIgnoreCase("bye")) {
-                System.out.println("____________________________________________________________");
-                System.out.println("Bye. Hope to see you again soon!");
-                System.out.println("____________________________________________________________");
-                break;
-            }
-
-            if (input.equalsIgnoreCase("list")) {
-                System.out.println("____________________________________________________________");
-                System.out.println("Here are the tasks in your list:");
-                int i = 1;
-                for (Task item : userTasks) {
-                    System.out.println(i + "." + item.toString());
-                    i++;
+            try {
+                if (input.equalsIgnoreCase("bye")) {
+                    // Exit program
+                    System.out.println("____________________________________________________________");
+                    System.out.println("Bye. Hope to see you again soon!");
+                    System.out.println("____________________________________________________________");
+                    break;
                 }
+
+                if (input.equalsIgnoreCase("list")) {
+                    // List all tasks
+                    System.out.println("____________________________________________________________");
+                    System.out.println("Here are the tasks in your list:");
+                    int i = 1;
+                    for (Task item : userTasks) {
+                        System.out.println(i + "." + item.toString());
+                        i++;
+                    }
+                    System.out.println("____________________________________________________________");
+                    continue;
+                }
+
+                if (input.toLowerCase().startsWith("mark")) {
+                    // Mark task
+                    if (input.length() < 6) {
+                        throw new LateException("Please specify the task number to mark.");
+                    }
+                    String numberPart = input.substring(5); //everything after "mark "
+                    int taskNumber = Integer.parseInt(numberPart);
+                    if (taskNumber < 1 || taskNumber > userTasks.size()) {
+                        throw new LateException("Task number out of range.");
+                    }
+                    System.out.println("____________________________________________________________");
+                    System.out.println("Nice! I've marked this task as done:");
+                    userTasks.get(taskNumber - 1).markAsDone();
+                    System.out.println(taskNumber + "." + userTasks.get(taskNumber - 1).toString());
+                    System.out.println("____________________________________________________________");
+                    continue;
+                }
+
+                if (input.toLowerCase().startsWith("unmark")) {
+                    // Unmark task
+                    if (input.length() < 8) {
+                        throw new LateException("Please specify the task number to unmark.");
+                    }
+                    String numberPart = input.substring(7); //everything after "unmark "
+                    int taskNumber = Integer.parseInt(numberPart);
+                    if (taskNumber < 1 || taskNumber > userTasks.size()) {
+                        throw new LateException("Task number out of range.");
+                    }
+                    System.out.println("____________________________________________________________");
+                    System.out.println("OK, I've marked this task as not done yet:");
+                    userTasks.get(taskNumber - 1).markAsUndone();
+                    System.out.println(taskNumber + "." + userTasks.get(taskNumber - 1).toString());
+                    System.out.println("____________________________________________________________");
+                    continue;
+                }
+
+                if (input.toLowerCase().startsWith("todo")) {
+                    // Check for description after todo
+                    if (input.length() < 6) {
+                        throw new LateException("The todo command must have a description. e.g. todo homework");
+                    }
+
+                    // Add todo
+                    userTasks.add(new ToDo(input.substring(5)));
+                    System.out.println("____________________________________________________________");
+                    System.out.println("Got it. I've added this task:");
+                    System.out.println(userTasks.get(userTasks.size() - 1).toString());
+                    System.out.println("Now you have " + userTasks.size() + " task(s) in the list.");
+                    System.out.println("____________________________________________________________");
+                    continue;
+                }
+
+                if (input.toLowerCase().startsWith("deadline")) {
+                    // Check for complete deadline input
+                    if (input.length() < 9) {
+                        throw new LateException("Deadlines must contain a /by e.g. deadline essay /by 2pm");
+                    }
+                    String remaining = input.substring(9).trim();
+
+                    // Split into description and deadline
+                    String[] parts = remaining.split("/by");
+
+                    // Check for /by and its trailing input
+                    if (parts.length < 2) {
+                        throw new LateException("Deadlines must contain a /by e.g. deadline essay /by 2pm");
+                    }
+
+                    String description = parts[0].trim();
+                    String by = parts[1].trim();
+
+                    if (description.isEmpty()) {
+                        throw new LateException("The description of a deadline cannot be empty.");
+                    }
+                    if (by.isEmpty()) {
+                        throw new LateException("The deadline date/time cannot be empty.");
+                    }
+
+                    userTasks.add(new Deadline(description, by));
+
+                    System.out.println("____________________________________________________________");
+                    System.out.println("Got it. I've added this task:");
+                    System.out.println(userTasks.get(userTasks.size() - 1).toString());
+                    System.out.println("Now you have " + userTasks.size() + " task(s) in the list.");
+                    System.out.println("____________________________________________________________");
+                    continue;
+                }
+
+                if (input.toLowerCase().startsWith("event")) {
+                    // Check for complete deadline input
+                    if (input.length() < 7) {
+                        throw new LateException("Events must contain a /from and /to e.g. event exam /from 2pm /to 4pm");
+                    }
+                    // Remove "event " from the start
+                    String remaining = input.substring(6).trim();
+
+                    // Split at /from
+                    String[] firstSplit = remaining.split("/from");
+                    if (firstSplit.length < 2) {
+                        throw new LateException("Events must contain a /from. e.g. event exam /from 2pm /to 4pm");
+                    }
+                    String description = firstSplit[0].trim();
+
+                    // Split the second part at /to
+                    String[] secondSplit = firstSplit[1].split("/to");
+                    if (secondSplit.length < 2) {
+                        throw new LateException("Events must contain a /to. e.g. event exam /from 2pm /to 4pm");
+                    }
+                    String from = secondSplit[0].trim();
+                    String to = secondSplit[1].trim();
+
+                    if (description.isEmpty()) {
+                        throw new LateException("The description of an event cannot be empty.");
+                    }
+                    if (from.isEmpty()) {
+                        throw new LateException("The 'from' time of an event cannot be empty.");
+                    }
+                    if (to.isEmpty()) {
+                        throw new LateException("The 'to' time of an event cannot be empty.");
+                    }
+
+                    userTasks.add(new Event(description, from, to));
+
+                    System.out.println("____________________________________________________________");
+                    System.out.println("Got it. I've added this task:");
+                    System.out.println(userTasks.get(userTasks.size() - 1).toString());
+                    System.out.println("Now you have " + userTasks.size() + " task(s) in the list.");
+                    System.out.println("____________________________________________________________");
+                    continue;
+                } else {
+                    throw new LateException("Unrecognised command entered");
+                }
+            } catch (LateException e) {
                 System.out.println("____________________________________________________________");
-                continue;
+                System.out.println(e.getMessage());
+                System.out.println("____________________________________________________________");
             }
-
-            if (input.toLowerCase().startsWith("mark ")) {
-                String numberPart = input.substring(5); //everything after "mark "
-                int taskNumber = Integer.parseInt(numberPart);
-                System.out.println("____________________________________________________________");
-                System.out.println("Nice! I've marked this task as done:");
-                userTasks.get(taskNumber - 1).markAsDone();
-                System.out.println(taskNumber + "." + userTasks.get(taskNumber - 1).toString());
-                System.out.println("____________________________________________________________");
-                continue;
-            }
-
-            if (input.toLowerCase().startsWith("unmark ")) {
-                String numberPart = input.substring(7); //everything after "mark "
-                int taskNumber = Integer.parseInt(numberPart);
-                System.out.println("____________________________________________________________");
-                System.out.println("OK, I've marked this task as not done yet:");
-                userTasks.get(taskNumber - 1).markAsUndone();
-                System.out.println(taskNumber + "." + userTasks.get(taskNumber - 1).toString());
-                System.out.println("____________________________________________________________");
-                continue;
-            }
-
-            if (input.toLowerCase().startsWith("todo ")) {
-                userTasks.add(new ToDo(input.substring(5)));
-                System.out.println("____________________________________________________________");
-                System.out.println("Got it. I've added this task:");
-                System.out.println(userTasks.get(userTasks.size() - 1).toString());
-                System.out.println("Now you have " + userTasks.size() + " task(s) in the list.");
-                System.out.println("____________________________________________________________");
-                continue;
-            }
-
-            if (input.toLowerCase().startsWith("deadline ")) {
-                // Remove "deadline " from the start
-                String remaining = input.substring(9).trim();
-
-                // Split into description and deadline
-                String[] parts = remaining.split("/by");
-
-                String description = parts[0].trim();
-                String by = parts[1].trim();
-                userTasks.add(new Deadline(description, by));
-
-                System.out.println("____________________________________________________________");
-                System.out.println("Got it. I've added this task:");
-                System.out.println(userTasks.get(userTasks.size() - 1).toString());
-                System.out.println("Now you have " + userTasks.size() + " task(s) in the list.");
-                System.out.println("____________________________________________________________");
-                continue;
-            }
-
-            if (input.toLowerCase().startsWith("event ")) {
-                // Remove "deadline " from the start
-                String remaining = input.substring(6).trim();
-
-                // Split at /from
-                String[] firstSplit = remaining.split("/from");
-                String description = firstSplit[0].trim();
-
-                // Split the second part at /to
-                String[] secondSplit = firstSplit[1].split("/to");
-                String from = secondSplit[0].trim();
-                String to = secondSplit[1].trim();
-
-                userTasks.add(new Event(description, from, to));
-
-                System.out.println("____________________________________________________________");
-                System.out.println("Got it. I've added this task:");
-                System.out.println(userTasks.get(userTasks.size() - 1).toString());
-                System.out.println("Now you have " + userTasks.size() + " task(s) in the list.");
-                System.out.println("____________________________________________________________");
-                continue;
-            }
-
-            userTasks.add(new Task(input));
-            System.out.println("____________________________________________________________");
-            System.out.println("added: " + input);
-            System.out.println("Now you have " + userTasks.size() + " task(s) in the list.");
-            System.out.println("____________________________________________________________");
         }
     }
 }
