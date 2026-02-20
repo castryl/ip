@@ -180,12 +180,31 @@ public class Late {
                     System.out.println("Now you have " + userTasks.size() + " task(s) in the list.");
                     System.out.println("____________________________________________________________");
                     continue;
+                }
+                if (input.toLowerCase().startsWith("delete")) {
+                    if (input.length() < 8) {
+                        throw new LateException("Task number to be deleted not indicated");
+                    }
+                    int deleteIndex = Integer.parseInt(input.substring(7));
+                    if (deleteIndex < 1 || deleteIndex > userTasks.size()) {
+                        throw new LateException("Task number out of range.");
+                    }
+                    System.out.println("____________________________________________________________");
+                    System.out.println("Noted. I've removed this task:");
+                    System.out.println(userTasks.get(deleteIndex - 1).toString());
+                    userTasks.remove(deleteIndex - 1);
+                    System.out.println("Now you have " + userTasks.size() + " task(s) in the list.");
+                    System.out.println("____________________________________________________________");
                 } else {
                     throw new LateException("Unrecognised command entered");
                 }
             } catch (LateException e) {
                 System.out.println("____________________________________________________________");
-                System.out.println(e.getMessage());
+                System.out.println("ERROR: " + e.getMessage());
+                System.out.println("____________________________________________________________");
+            } catch (NumberFormatException e) {
+                System.out.println("____________________________________________________________");
+                System.out.println("ERROR: Please enter a valid task number.");
                 System.out.println("____________________________________________________________");
             }
         }
