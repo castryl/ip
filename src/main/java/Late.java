@@ -1,3 +1,6 @@
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -12,6 +15,27 @@ public class Late {
         System.out.println(text);
         System.out.println("____________________________________________________________");
     }
+
+    /**
+     * Save tasks to a txt file called late.txt in the data folder
+     * Creates the data folder if it does not exist
+     */
+    public static void saveTasks(List<Task> userTasks) {
+        try {
+            File directory = new File("data");
+            if (!directory.exists()) {
+                directory.mkdir();
+            }
+            FileWriter writer = new FileWriter("data/late.txt");
+            for (Task task : userTasks) {
+                writer.write(task.toSaveString() + System.lineSeparator());
+            }
+            writer.close();
+        } catch (IOException e) {
+            System.out.println("Error saving tasks: " + e.getMessage());
+        }
+    }
+
     /**
      * Echoes text inputs and saves them in a list
      * Prints the list if input is "list"
@@ -62,6 +86,7 @@ public class Late {
                     System.out.println("____________________________________________________________");
                     System.out.println("Nice! I've marked this task as done:");
                     userTasks.get(markTaskNumber - 1).markAsDone();
+                    saveTasks(userTasks);
                     System.out.println(markTaskNumber + "." + userTasks.get(markTaskNumber - 1).toString());
                     System.out.println("____________________________________________________________");
                     break;
@@ -78,6 +103,7 @@ public class Late {
                     System.out.println("____________________________________________________________");
                     System.out.println("OK, I've marked this task as not done yet:");
                     userTasks.get(unmarkTaskNumber - 1).markAsUndone();
+                    saveTasks(userTasks);
                     System.out.println(unmarkTaskNumber + "." + userTasks.get(unmarkTaskNumber - 1).toString());
                     System.out.println("____________________________________________________________");
                     break;
@@ -87,6 +113,7 @@ public class Late {
                         throw new LateException("The todo command must have a description. e.g. todo homework");
                     }
                     userTasks.add(new ToDo(input.substring(5)));
+                    saveTasks(userTasks);
                     System.out.println("____________________________________________________________");
                     System.out.println("Got it. I've added this task:");
                     System.out.println(userTasks.get(userTasks.size() - 1).toString());
@@ -112,6 +139,7 @@ public class Late {
                         throw new LateException("The deadline date/time cannot be empty.");
                     }
                     userTasks.add(new Deadline(deadlineDescription, by));
+                    saveTasks(userTasks);
                     System.out.println("____________________________________________________________");
                     System.out.println("Got it. I've added this task:");
                     System.out.println(userTasks.get(userTasks.size() - 1).toString());
@@ -145,6 +173,7 @@ public class Late {
                         throw new LateException("The 'to' time of an event cannot be empty.");
                     }
                     userTasks.add(new Event(eventDescription, from, to));
+                    saveTasks(userTasks);
                     System.out.println("____________________________________________________________");
                     System.out.println("Got it. I've added this task:");
                     System.out.println(userTasks.get(userTasks.size() - 1).toString());
@@ -164,6 +193,7 @@ public class Late {
                     System.out.println("Noted. I've removed this task:");
                     System.out.println(userTasks.get(deleteIndex - 1).toString());
                     userTasks.remove(deleteIndex - 1);
+                    saveTasks(userTasks);
                     System.out.println("Now you have " + userTasks.size() + " task(s) in the list.");
                     System.out.println("____________________________________________________________");
                     break;
