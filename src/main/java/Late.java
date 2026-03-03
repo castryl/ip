@@ -4,15 +4,6 @@ import java.util.Scanner;
 
 public class Late {
     /**
-     * Prints lines before and after the input text
-     * @param text
-     */
-    public static void printWithLines(String text) {
-        System.out.println("____________________________________________________________");
-        System.out.println(text);
-        System.out.println("____________________________________________________________");
-    }
-    /**
      * Echoes text inputs and saves them in a list
      * Prints the list if input is "list"
      * Exits if input is "bye"
