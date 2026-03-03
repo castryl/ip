@@ -1,2 +1,2 @@
-T | 1 | hw
+T | 0 | hw
 E | 0 | concert | sun 7pm - 9pm
