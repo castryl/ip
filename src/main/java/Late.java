@@ -1,13 +1,85 @@
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
 public class Late {
     /**
-     * Echoes text inputs and saves them in a list
-     * Prints the list if input is "list"
-     * Exits if input is "bye"
-     * @param args text input from user
+     * Save tasks to a txt file called late.txt in the data folder.
+     * Creates the data folder if it does not exist.
+     */
+    public static void saveTasks(List<Task> userTasks) {
+        try {
+            File directory = new File("data");
+            if (!directory.exists()) {
+                directory.mkdir();
+            }
+            FileWriter writer = new FileWriter("data/late.txt");
+            for (Task task : userTasks) {
+                writer.write(task.toSaveString() + System.lineSeparator());
+            }
+            writer.close();
+        } catch (IOException e) {
+            System.out.println("Error saving tasks: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Loads tasks from a txt file called late.txt in the data folder.
+     *
+     * @return A list of tasks parsed from the file. If the file does not exist or is empty, return an empty list.
+     */
+    public static List<Task> loadTasks() {
+        List<Task> loadedTasks = new ArrayList<>();
+        File file = new File("data/late.txt");
+        if (!file.exists()) {
+            return loadedTasks;
+        }
+
+        try {
+            Scanner scanner = new Scanner(file);
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                String[] parts = line.split(" \\| ");
+
+                String type = parts[0];
+                boolean isDone = parts[1].equals("1");
+                String description = parts[2];
+
+                Task task = switch (type) {
+                    case "T" -> new ToDo(description);
+                    case "D" -> new Deadline(description, parts[3]);
+                    case "E" -> {
+                        String[] timeParts = parts[3].split(" - ");
+                        yield new Event(description, timeParts[0], timeParts[1]);
+                    }
+                    default -> null;
+                };
+
+                if (task != null) {
+                    if (isDone) {
+                        task.markAsDone();
+                    }
+                    loadedTasks.add(task);
+                }
+            }
+            scanner.close();
+        } catch (FileNotFoundException e) {
+            // Should not happen as we check file.exists()
+        }
+        return loadedTasks;
+    }
+
+    /**
+     * Initializes the program, displaying a welcome message, processes user input, and handling task management.
+     * Commands allow for adding tasks, marking them as done, unmarking, and deleting tasks.
+     * The method runs in a loop until the user issues the BYE command to terminate the program.
+     *
+     * @param args Command-line arguments passed to the program. These arguments are not used
+     *             in this application.
      */
     public static void main(String[] args) {
         System.out.println("____________________________________________________________");
@@ -16,7 +88,7 @@ public class Late {
         System.out.println("____________________________________________________________");
 
         Scanner scanner = new Scanner(System.in);
-        List<Task> userTasks = new ArrayList<>();
+        List<Task> userTasks = loadTasks();
 
         while (true) {
             String input = scanner.nextLine();
@@ -53,6 +125,7 @@ public class Late {
                     System.out.println("____________________________________________________________");
                     System.out.println("Nice! I've marked this task as done:");
                     userTasks.get(markTaskNumber - 1).markAsDone();
+                    saveTasks(userTasks);
                     System.out.println(markTaskNumber + "." + userTasks.get(markTaskNumber - 1).toString());
                     System.out.println("____________________________________________________________");
                     break;
@@ -69,6 +142,7 @@ public class Late {
                     System.out.println("____________________________________________________________");
                     System.out.println("OK, I've marked this task as not done yet:");
                     userTasks.get(unmarkTaskNumber - 1).markAsUndone();
+                    saveTasks(userTasks);
                     System.out.println(unmarkTaskNumber + "." + userTasks.get(unmarkTaskNumber - 1).toString());
                     System.out.println("____________________________________________________________");
                     break;
@@ -78,6 +152,7 @@ public class Late {
                         throw new LateException("The todo command must have a description. e.g. todo homework");
                     }
                     userTasks.add(new ToDo(input.substring(5)));
+                    saveTasks(userTasks);
                     System.out.println("____________________________________________________________");
                     System.out.println("Got it. I've added this task:");
                     System.out.println(userTasks.get(userTasks.size() - 1).toString());
@@ -103,6 +178,7 @@ public class Late {
                         throw new LateException("The deadline date/time cannot be empty.");
                     }
                     userTasks.add(new Deadline(deadlineDescription, by));
+                    saveTasks(userTasks);
                     System.out.println("____________________________________________________________");
                     System.out.println("Got it. I've added this task:");
                     System.out.println(userTasks.get(userTasks.size() - 1).toString());
@@ -136,6 +212,7 @@ public class Late {
                         throw new LateException("The 'to' time of an event cannot be empty.");
                     }
                     userTasks.add(new Event(eventDescription, from, to));
+                    saveTasks(userTasks);
                     System.out.println("____________________________________________________________");
                     System.out.println("Got it. I've added this task:");
                     System.out.println(userTasks.get(userTasks.size() - 1).toString());
@@ -155,6 +232,7 @@ public class Late {
                     System.out.println("Noted. I've removed this task:");
                     System.out.println(userTasks.get(deleteIndex - 1).toString());
                     userTasks.remove(deleteIndex - 1);
+                    saveTasks(userTasks);
                     System.out.println("Now you have " + userTasks.size() + " task(s) in the list.");
                     System.out.println("____________________________________________________________");
                     break;
